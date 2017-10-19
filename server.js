@@ -20,13 +20,19 @@ var handler = function(res, next) {
         if (err) {
             return next(err);
         }
+        console.log(beer)
         res.send(beer);
     }
 }
 
 app.get('/beers', function(request, response, next) {
 
-    Beer.find(handler(res, next));
+    Beer.find(function(err, beers_from_db) {
+        if (err) {
+            return next(err);
+        }
+        response.send(beers_from_db);
+    });
 
 });
 
@@ -35,14 +41,18 @@ app.post('/beers', function(req, res, next) {
 
     //recieve what the client gave us
     var new_beer_from_client = req.body
+        //save what the client gave us
+    var new_beer_for_db = new Beer(new_beer_from_client);
 
-    //save what the client gave us
-    var new_beer_for_db = new Beer(new_beer_from_client)
-
-    new_beer_for_db.save(handler(res, next))
+    new_beer_for_db.save(function(err, beers_from_db) {
+        if (err) {
+            return next(err);
+        }
+        res.send(beers_from_db);
         //send a response to the client that we saved it
         // res.send(new_beer_for_db)
-});
+    });
+})
 
 
 
@@ -51,8 +61,12 @@ app.delete("/beers/:beerId", function(req, res, next) {
 
     var id = req.params.beerId;
 
-    Beer.findByIdAndRemove(id, handler(res, next))
-
+    Beer.findByIdAndRemove(id, function(err, removed_beer) {
+        if (err) {
+            return next(err);
+        }
+        res.send(removed_beer);
+    })
 
 });
 
@@ -70,7 +84,6 @@ app.put("/brandon/:param1/something/:param2", function(req, res) {
     var data = { param1: req.params.param1, param2: req.params.param2, data: req.body };
     res.send(data)
 })
-
 
 
 
